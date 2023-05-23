@@ -83,7 +83,7 @@ task trimming {
         String sample_id
     }
     command {
-        cutadapt --discard -a zzzzzzzz -o ${sample_id}.cutadapt.fastq.gz ${fastq1_in} > ${sample_id}_cutadapt_report.txt
+        cutadapt --discard -a CTGTCTCTTATACACATCT -o ${sample_id}.cutadapt.fastq.gz ${fastq1_in} > ${sample_id}_cutadapt_report.txt
         /TrimGalore-0.6.10/trim_galore --path_to_cutadapt cutadapt --nextera --nextseq 20 ${sample_id}.cutadapt.fastq.gz
     }
     runtime {
