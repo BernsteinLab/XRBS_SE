@@ -66,8 +66,9 @@ task fastqc {
         String sample_id
     }
     command {
+        mkdir ${sample_id}_fastqc_out
         fastqc -o ${sample_id}_fastqc_out ${fastq1}
-        zip ${sample_id}_fastqc_out
+        zip -r ${sample_id}_fastqc_out.zip ${sample_id}_fastqc_out
     }
     runtime {
         docker: "salvacasani/fastqc"
@@ -91,7 +92,7 @@ task trimming {
     }
     output {
         File cutadapt_report = "${sample_id}_cutadapt_report.txt"
-        File fastq1 = "${sample_id}.cutadapt_val_1.fq.gz"
+        File fastq1 = "${sample_id}.cutadapt_trimmed.fq.gz"
     }
 }
 
