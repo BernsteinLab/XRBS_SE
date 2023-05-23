@@ -28,7 +28,7 @@ workflow XRBS {
                 }
 
     call align {input: 
-                    fastq = conv_fastq,
+                    fastq = fqconv.fastq,
                     reference_index = reference_index,
                     sample_id = sample_id
                 }
