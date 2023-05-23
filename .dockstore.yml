@@ -1,0 +1,6 @@
+version: 1.0
+workflows:
+   - subclass: WDL
+     primaryDescriptorPath: /xrbs_ultima.wdl
+     testParameterFiles:
+     - /test_data/test.json

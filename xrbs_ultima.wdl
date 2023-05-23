@@ -6,8 +6,8 @@ workflow XRBS {
 
 	input {
         String sample_id
-		File fastq1
-		File reference
+        File fastq1
+        File reference
         File reference_index
         File reference_positions
 	}
@@ -66,7 +66,7 @@ task fastqc {
         String sample_id
     }
     command {
-        fastqc -o ${sample_id}_fastqc_out fastq1 fastq2
+        fastqc -o ${sample_id}_fastqc_out ${fastq1}
         zip ${sample_id}_fastqc_out
     }
     runtime {
@@ -80,13 +80,11 @@ task fastqc {
 task trimming {
     input {
         File fastq1_in
-        String adapter
-        String platform
         String sample_id
     }
     command {
-        cutadapt --discard -a ${adapter} -o ${sample_id}.cutadapt.fastq.gz ${fastq1_in} > ${sample_id}_cutadapt_report.txt
-        TrimGalore-0.6.5/trim_galore --path_to_cutadapt cutadapt --${platform} --nextseq 20 ${sample_id}.cutadapt.fastq.gz
+        cutadapt --discard -a zzzzzzzz -o ${sample_id}.cutadapt.fastq.gz ${fastq1_in} > ${sample_id}_cutadapt_report.txt
+        /TrimGalore-0.6.10/trim_galore --path_to_cutadapt cutadapt --nextera --nextseq 20 ${sample_id}.cutadapt.fastq.gz
     }
     runtime {
         docker: "salvacasani/trimming:latest"
@@ -104,7 +102,7 @@ task fqconv {
         String sample_id
     }
     command {
-        methylCtools fqconv -1 ${fastq1} ${sample_id}.conv.fq
+        /methylCtools/methylCtools fqconv -1 ${fastq1} ${sample_id}.conv.fq
 
     }
     runtime {
@@ -133,7 +131,8 @@ task align {
         GENOME_INDEX_FA="$(dirname $BWT)"/"$(basename $BWT .bwt)"
         echo "Using bwa index: $GENOME_INDEX_FA"
 
-        bwa mem -t 4 -p -M -T 0 $GENOME_INDEX_FA ${fastq} | samtools view -Sb - > ${sample_id}.reads.conv.bam
+        bwa mem -t 4 -p -M -T 0 $GENOME_INDEX_FA ${fastq} > align.sam
+        samtools view -Sb align.sam > ${sample_id}.reads.conv.bam
 
     }
     runtime {
@@ -154,7 +153,7 @@ task bconv {
         String sample_id
     }
     command {
-        methylCtools bconv bam -m ${sample_id}.human.conv.sort.metrics.txt - | samtools sort -T ${sample_id}.human.sort -@ 4 - > ${sample_id}.sorted.bam
+        /methylCtools/methylCtools bconv ${bam} -m ${sample_id}.human.conv.sort.metrics.txt - | samtools sort -T ${sample_id}.human.sort -@ 4 - > ${sample_id}.sorted.bam
         samtools index ${sample_id}.sorted.bam
         samtools flagstat ${sample_id}.sorted.bam > ${sample_id}.sorted.bam.flagstat
     }
@@ -178,7 +177,7 @@ task filter {
         String sample_id
     }
     command {
-        Rscript filter.vh20200112.R  sorted_bam
+        Rscript filter.vh20200112.R  ${sorted_bam}
 
     }
     runtime {
@@ -200,7 +199,8 @@ task methylation {
         String sample_id
     }
     command {
-        methylCtools bcall --trimPE --metrics ${sample_id}.human.sort.filter.call.metrics reference_pos filtered_bam - | bgzip > ${sample_id}.call.gz
+        unzip ${reference_pos}
+        /methylCtools/methylCtools bcall --trimPE --metrics ${sample_id}.human.sort.filter.call.metrics GRCh38.pos.gz ${filtered_bam} - | bgzip > ${sample_id}.call.gz
 
     }
     runtime {
